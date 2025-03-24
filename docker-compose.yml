@@ -1,0 +1,8 @@
+services:
+  web_app:
+    build: ./schedule-gen-web-app
+    container_name: schedule_gen_web_app
+    env_file:
+      - .env 
+    ports:
+      - "3000:3000"

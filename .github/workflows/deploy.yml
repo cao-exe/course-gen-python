@@ -1,0 +1,36 @@
+name: Deploy to digital ocean
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Stop previous Gunicorn process if running
+        run: |
+          # Check if Gunicorn is running and kill the process
+          echo "Checking for existing Gunicorn processes..."
+          pid=$(ps aux | grep 'gunicorn' | grep -v 'grep' | awk '{print $2}')
+          if [ -n "$pid" ]; then
+            echo "Found Gunicorn process with PID $pid. Stopping it..."
+            kill -9 $pid
+          else
+            echo "No existing Gunicorn process found."
+          fi
+
+      - name: Install sshpass
+        run: sudo apt-get install -y sshpass
+      
+      - name: Deploy to server
+        run: |
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" ssh -o StrictHostKeyChecking=no willi@138.197.107.82 <<EOF
+            cd swe-final/5-final-swe_switching_with_econ/schedule-gen-web-app
+            pip install -r requirements.txt
+            git stash
+            git pull
+            nohup gunicorn --bind 138.197.107.82:3000 app:app > gunicorn.log 2>&1 &
+            exit 0
+          EOF
