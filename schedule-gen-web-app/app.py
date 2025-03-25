@@ -74,7 +74,7 @@ def create_app(testing=False):
     app.secret_key = os.getenv("SECRET_KEY")
 
     client = MongoClient(os.getenv("MONGO_URI"))
-    db = client["schedule_db"]
+    db = client["csg-python"]
 
     app.config['TESTING'] = testing
     
